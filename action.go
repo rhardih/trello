@@ -50,6 +50,28 @@ func (b *Board) GetActions(args Arguments) (actions ActionCollection, err error)
 	return
 }
 
+func (b *Board) GetActionsWithoutLimits(args Arguments) (actions ActionCollection, err error) {
+	path := fmt.Sprintf("boards/%s/actions", b.ID)
+	lastID := ""
+	if args["limit"] == "" {
+		args["limit"] = "1000"
+	}
+	for {
+		batchActions := make(ActionCollection, 0)
+		if lastID != "" {
+			args["before"] = lastID
+		}
+		err = b.client.Get(path, args, &batchActions)
+		if err != nil || len(batchActions) == 0 {
+			return
+		}
+		lastID = batchActions[len(batchActions)-1].ID
+		for i, _ := range batchActions {
+			actions = append(actions, batchActions[i])
+		}
+	}
+}
+
 func (l *List) GetActions(args Arguments) (actions ActionCollection, err error) {
 	path := fmt.Sprintf("lists/%s/actions", l.ID)
 	err = l.client.Get(path, args, &actions)
