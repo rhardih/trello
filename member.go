@@ -31,6 +31,15 @@ func (c *Client) GetMember(memberID string, args Arguments) (member *Member, err
 	return
 }
 
+func (t *Token) GetMember() (member *Member, err error) {
+  path := fmt.Sprintf("tokens/%s/member", t.ID)
+  err = t.client.Get(path, Defaults(), &member)
+  if err == nil {
+    member.client = t.client
+  }
+  return
+}
+
 // GetMembers takes Arguments and returns a slice of all members of the organization or an error.
 func (o *Organization) GetMembers(args Arguments) (members []*Member, err error) {
 	path := fmt.Sprintf("organizations/%s/members", o.ID)
